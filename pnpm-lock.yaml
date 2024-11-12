@@ -20,6 +20,9 @@ importers:
       fastify:
         specifier: ^4.26.1
         version: 4.28.1
+      kutty:
+        specifier: ^0.6.0
+        version: 0.6.0(tailwindcss@3.4.14)
       lucide-react:
         specifier: ^0.344.0
         version: 0.344.0(react@18.3.1)
@@ -1305,6 +1308,11 @@ packages:
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
+
+  kutty@0.6.0:
+    resolution: {integrity: sha512-QI4qt0aDMG05BH845B16u9Fun5tBfpNcD89Yky4suU5iwmu5P3xPEcoRSDl9E7/WU5kfjuzTK1XzStglkd3Msg==}
+    peerDependencies:
+      tailwindcss: ^3.0.7
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -3027,6 +3035,10 @@ snapshots:
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
+
+  kutty@0.6.0(tailwindcss@3.4.14):
+    dependencies:
+      tailwindcss: 3.4.14
 
   levn@0.4.1:
     dependencies:

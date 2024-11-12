@@ -1,231 +1,232 @@
-import { Plus, Power, Construction, ShieldAlert, Trash2 } from "lucide-react";
-import React, { type FormEvent, useEffect, useState } from "react";
+import { Lock, Power, ShieldAlert, Trash2 } from "lucide-react";
+import React, { type ChangeEvent, type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import type { IMaintenanceResponseBody, IResponseError } from "./types";
 
-interface WhitelistedIP {
-	ip: string;
-	created_at: string;
-}
+const App = (): ReactNode => {
+	const [underMaintenance, setUnderMaintenance] = useState<boolean>(false);
+	const [whitelist, setWhitelist] = useState<{ ip: string; created_at: string }[]>([]);
+	const [newToWhitelistIP, setNewToWhitelistIP] = useState<string>("");
+	const [userIP, setUserIP] = useState<string>("");
 
-function App() {
-	const [maintenanceMode, setMaintenanceMode] = useState(false);
-	const [whitelistedIPs, setWhitelistedIPs] = useState<WhitelistedIP[]>([]);
-	const [newIP, setNewIP] = useState("");
-	const [currentIP, setCurrentIP] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+	const handleGetIP = useCallback(async (): Promise<void> => {
+		try {
+			const getIpResponse = await fetch("https://api.ipify.org/?format=json", {
+				method: "GET",
+			});
 
-	useEffect(() => {
-		const initializeData = async () => {
-			try {
-				setIsLoading(true);
-				await Promise.all([fetchStatus(), fetchWhitelistedIPs(), fetchCurrentIP()]);
-			} catch (error) {
-				toast.error("Failed to load initial data");
-			} finally {
-				setIsLoading(false);
+			if (!getIpResponse.ok) {
+				const getIpResponseError: IResponseError = await getIpResponse.json();
+
+				throw new Error(getIpResponseError.message);
 			}
-		};
 
-		initializeData();
+			const getIpResponseBody: { ip: string } = await getIpResponse.json();
+
+			setUserIP(getIpResponseBody.ip);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
+		}
 	}, []);
 
-	const fetchStatus = async () => {
-		const response = await fetch("http://localhost:3000/api/maintenance/status");
-		const data = await response.json();
-		setMaintenanceMode(data.enabled);
-	};
-
-	const fetchWhitelistedIPs = async () => {
-		const response = await fetch("http://localhost:3000/api/maintenance/whitelist");
-		const data = await response.json();
-		setWhitelistedIPs(data);
-	};
-
-	const fetchCurrentIP = async () => {
+	const handleGetMaintenance = useCallback(async (): Promise<void> => {
 		try {
-			const response = await fetch("https://api.ipify.org/?format=json");
-			if (!response.ok) throw new Error("Failed to fetch IP");
-			const data = await response.json();
-			setCurrentIP(data.ip);
-		} catch (error) {
-			console.error("Error fetching IP:", error);
-			setCurrentIP(null);
-			toast.error("Failed to fetch your IP address");
-		}
-	};
-
-	const toggleMaintenanceMode = async () => {
-		try {
-			const response = await fetch("http://localhost:3000/api/maintenance/toggle", {
-				method: "POST",
-			});
-			const data = await response.json();
-			setMaintenanceMode(data.enabled);
-			toast.success(`Maintenance mode ${data.enabled ? "enabled" : "disabled"}`);
-		} catch (error) {
-			toast.error("Failed to toggle maintenance mode");
-		}
-	};
-
-	const addWhitelistedIP = async (e: FormEvent) => {
-		e.preventDefault();
-		if (!newIP) return;
-
-		try {
-			const response = await fetch("http://localhost:3000/api/maintenance/whitelist", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ ip: newIP }),
+			const getMaintenanceResponse: Response = await fetch("http://localhost:3000/api/maintenance/status", {
+				method: "GET",
 			});
 
-			if (response.ok) {
-				await fetchWhitelistedIPs();
-				setNewIP("");
-				toast.success("IP added to whitelist");
-			} else {
-				const error = await response.json();
-				toast.error(error.error || "Failed to add IP");
+			if (!getMaintenanceResponse.ok) {
+				const getMaintenanceResponseError: IResponseError = await getMaintenanceResponse.json();
+
+				throw new Error(getMaintenanceResponseError.message);
 			}
-		} catch (error) {
-			toast.error("Failed to add IP");
+
+			const getMaintenanceResponseBody: IMaintenanceResponseBody = await getMaintenanceResponse.json();
+			setUnderMaintenance(getMaintenanceResponseBody.enabled);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
+		}
+	}, []);
+
+	const handleGetWhitelist = useCallback(async (): Promise<void> => {
+		try {
+			const getWhitelistResponse: Response = await fetch("http://localhost:3000/api/maintenance/whitelist", {
+				method: "GET",
+			});
+
+			if (!getWhitelistResponse.ok) {
+				const getWhitelistResponseError: IResponseError = await getWhitelistResponse.json();
+
+				throw new Error(getWhitelistResponseError.message);
+			}
+
+			const getWhitelistResponseBody = await getWhitelistResponse.json();
+			setWhitelist(getWhitelistResponseBody);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
+		}
+	}, []);
+
+	const handleToggleMaintenance = async (): Promise<void> => {
+		try {
+			const toggleMaintenanceResponse: Response = await fetch("http://localhost:3000/api/maintenance/toggle", {
+				method: "POST",
+			});
+
+			if (!toggleMaintenanceResponse.ok) {
+				const toggleMaintenanceResponseError: IResponseError = await toggleMaintenanceResponse.json();
+
+				throw new Error(toggleMaintenanceResponseError.message);
+			}
+
+			const toggleMaintenanceResponseBody: IMaintenanceResponseBody = await toggleMaintenanceResponse.json();
+			setUnderMaintenance(toggleMaintenanceResponseBody.enabled);
+
+			toast.success(`Maintenance ${toggleMaintenanceResponseBody.enabled ? "Enabled" : "Disabled"}`);
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
 		}
 	};
 
-	const removeWhitelistedIP = async (ip: string) => {
+	const handleAddWhitelist = async (): Promise<void> => {
 		try {
-			const response = await fetch(`http://localhost:3000/api/maintenance/whitelist/${ip}`, {
+			const addWhitelistResponse: Response = await fetch("http://localhost:3000/api/maintenance/whitelist", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ ip: newToWhitelistIP }),
+			});
+
+			if (!addWhitelistResponse.ok) {
+				const addWhitelistResponseError: IResponseError = await addWhitelistResponse.json();
+
+				throw new Error(addWhitelistResponseError.message);
+			}
+
+			handleGetWhitelist();
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
+		}
+	};
+
+	const handleRemoveWhitelist = async (ip: string): Promise<void> => {
+		try {
+			const removeWhitelistResponse: Response = await fetch(`http://localhost:3000/api/maintenance/whitelist/${ip}`, {
 				method: "DELETE",
 			});
 
-			if (response.ok) {
-				await fetchWhitelistedIPs();
-				toast.success("IP removed from whitelist");
-			} else {
-				toast.error("Failed to remove IP");
+			if (!removeWhitelistResponse.ok) {
+				const removeWhitelistResponseError: IResponseError = await removeWhitelistResponse.json();
+
+				throw new Error(removeWhitelistResponseError.message);
 			}
-		} catch (error) {
-			toast.error("Failed to remove IP");
+
+			handleGetWhitelist();
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				toast.error(error.message);
+				throw new Error(error.message);
+			}
 		}
 	};
 
-	const useCurrentIP = () => {
-		if (currentIP) {
-			setNewIP(currentIP);
-		}
-	};
+	useEffect((): void => {
+		handleGetIP();
+		handleGetMaintenance();
+		handleGetWhitelist();
+	}, [handleGetIP, handleGetMaintenance, handleGetWhitelist]);
 
 	return (
-		<div className="min-h-screen bg-gray-50">
-			<Toaster position="top-right" />
-			<div className="max-w-4xl mx-auto p-6">
-				<div className="flex items-center justify-between mb-8">
-					<div className="flex items-center gap-3">
-						<Construction className="w-8 h-8 text-indigo-600" />
-						<h1 className="text-2xl font-bold text-gray-900">MAINTENEE Control Panel</h1>
-					</div>
-					<button
-						type="button"
-						onClick={toggleMaintenanceMode}
-						className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium ${
-							maintenanceMode
-								? "bg-red-100 text-red-700 hover:bg-red-200"
-								: "bg-green-100 text-green-700 hover:bg-green-200"
-						}`}
-					>
-						<Power className="w-5 h-5" />
-						{maintenanceMode ? "Disable" : "Enable"} Maintenance Mode
-					</button>
+		<div className="flex flex-col container max-w-6xl mx-auto px-6 py-6">
+			<Toaster position="top-center" />
+
+			<div className="flex items-center justify-between px-6 py-4 bg-slate-600">
+				<h1 className="text-xl font-bold text-white">Maintenee Control Panel</h1>
+
+				<button
+					type="button"
+					className={`flex items-center gap-2 btn ${underMaintenance ? "btn-outline-danger" : "btn-google"}`}
+					onClick={(): Promise<void> => handleToggleMaintenance()}
+				>
+					<Power className="w-5 h-5" />
+					<span className="text-base font-medium">{underMaintenance ? "Disable" : "Enable"} Maintenance</span>
+				</button>
+			</div>
+
+			<div className="flex flex-col gap-y-3 px-6 py-6 border shadow-sm rounded-sm">
+				<div className="flex gap-x-1 items-center">
+					<ShieldAlert className="w-5 h-5" />
+					<h2 className="text-base text-black font-bold">Current Status</h2>
 				</div>
 
-				<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-					<div className="flex items-center gap-2 mb-4">
-						<ShieldAlert className="w-5 h-5 text-indigo-600" />
-						<h2 className="text-lg font-semibold text-gray-900">Current Status</h2>
-					</div>
-					<div className="space-y-2">
-						<p className="text-gray-600">
-							Maintenance Mode:
-							<span className={`ml-2 font-medium ${maintenanceMode ? "text-green-600" : "text-red-600"}`}>
-								{maintenanceMode ? "Active" : "Inactive"}
-							</span>
-						</p>
-						<p className="text-gray-600">
-							Your IP:{" "}
-							{isLoading ? (
-								<span className="ml-2 text-gray-400">Loading...</span>
-							) : currentIP ? (
-								<span className="ml-2 font-medium text-gray-900">{currentIP}</span>
-							) : (
-								<span className="ml-2 text-red-500">Failed to load IP</span>
-							)}
-							{!isLoading && !currentIP && (
-								<button
-									type="button"
-									onClick={fetchCurrentIP}
-									className="ml-2 text-indigo-600 hover:text-indigo-700 text-sm"
-								>
-									Retry
-								</button>
-							)}
-						</p>
-					</div>
+				<div className="flex gap-x-1 items-center">
+					<span className="text-base text-black font-normal">Your IP:</span>
+					{userIP ? (
+						<span className="text-base text-black font-medium">{userIP}</span>
+					) : (
+						<span className="text-base text-red-500">Failed to load IP</span>
+					)}
+				</div>
+			</div>
+
+			<div className="flex flex-col gap-y-3 px-6 py-6 border shadow-sm rounded-sm">
+				<div className="flex gap-x-1 items-center">
+					<Lock className="w-5 h-5" />
+					<h2 className="text-base text-black font-bold">IP Whitelist</h2>
 				</div>
 
-				<div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-					<h2 className="text-lg font-semibold text-gray-900 mb-4">IP Whitelist</h2>
+				<form className="flex gap-3" onSubmit={(e: FormEvent<HTMLFormElement>) => handleAddWhitelist()}>
+					<input
+						type="text"
+						className="text-base text-black font-normal flex-1"
+						value={newToWhitelistIP}
+						placeholder="Enter IP address"
+						onChange={(e: ChangeEvent<HTMLInputElement>) => setNewToWhitelistIP(e.target.value)}
+					/>
+				</form>
 
-					<div className="space-y-3">
-						<form onSubmit={addWhitelistedIP} className="flex gap-3">
-							<input
-								type="text"
-								value={newIP}
-								onChange={(e) => setNewIP(e.target.value)}
-								placeholder="Enter IP address"
-								className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-							/>
-							<button
-								type="submit"
-								className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-							>
-								<Plus className="w-5 h-5" />
-								Add IP
-							</button>
-						</form>
+				<button
+					type="button"
+					className="btn btn-google text-sm text-white"
+					disabled={!userIP}
+					onClick={(): void => setNewToWhitelistIP(userIP)}
+				>
+					{userIP ? `Click to use your IP (${userIP})` : "Loading your IP..."}
+				</button>
 
+				{whitelist.map((item) => (
+					<div key={item.ip} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+						<div>
+							<p className="font-medium text-gray-900">{item.ip}</p>
+							<p className="text-sm text-gray-500">Added on {new Date(item.created_at).toLocaleDateString()}</p>
+						</div>
 						<button
 							type="button"
-							onClick={useCurrentIP}
-							disabled={!currentIP}
-							className="w-full text-sm text-indigo-600 hover:text-indigo-700 disabled:text-gray-400 disabled:cursor-not-allowed text-left"
+							className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+							onClick={(): Promise<void> => handleRemoveWhitelist(item.ip)}
 						>
-							{currentIP ? `Click to use your IP (${currentIP})` : "Loading your IP..."}
+							<Trash2 className="w-5 h-5" />
 						</button>
 					</div>
-
-					<div className="mt-6 space-y-3">
-						{whitelistedIPs.map((item) => (
-							<div key={item.ip} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-								<div>
-									<p className="font-medium text-gray-900">{item.ip}</p>
-									<p className="text-sm text-gray-500">Added on {new Date(item.created_at).toLocaleDateString()}</p>
-								</div>
-								<button
-									type="button"
-									onClick={() => removeWhitelistedIP(item.ip)}
-									className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
-								>
-									<Trash2 className="w-5 h-5" />
-								</button>
-							</div>
-						))}
-						{whitelistedIPs.length === 0 && <p className="text-center text-gray-500 py-4">No whitelisted IPs yet</p>}
-					</div>
-				</div>
+				))}
+				{whitelist.length === 0 && <p className="text-center text-gray-500 py-4">No whitelisted IPs yet</p>}
 			</div>
 		</div>
 	);
-}
+};
 
 export default App;
