@@ -1,11 +1,11 @@
 import { Lock, Power, ShieldAlert, Trash2 } from "lucide-react";
 import React, { type ChangeEvent, type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import type { IMaintenanceResponseBody, IResponseError } from "./types";
+import type { IMaintenanceResponseBody, IResponseError, IWhitelist } from "./types";
 
 const App = (): ReactNode => {
 	const [underMaintenance, setUnderMaintenance] = useState<boolean>(false);
-	const [whitelist, setWhitelist] = useState<{ ip: string; created_at: string }[]>([]);
+	const [whitelist, setWhitelist] = useState<IWhitelist[]>([]);
 	const [newToWhitelistIP, setNewToWhitelistIP] = useState<string>("");
 	const [userIP, setUserIP] = useState<string>("");
 
@@ -208,16 +208,16 @@ const App = (): ReactNode => {
 					{userIP ? `Click to use your IP (${userIP})` : "Loading your IP..."}
 				</button>
 
-				{whitelist.map((item) => (
-					<div key={item.ip} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+				{whitelist.map((whitelist: IWhitelist) => (
+					<div key={whitelist.ip} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
 						<div>
-							<p className="font-medium text-gray-900">{item.ip}</p>
-							<p className="text-sm text-gray-500">Added on {new Date(item.created_at).toLocaleDateString()}</p>
+							<p className="font-medium text-gray-900">{whitelist.ip}</p>
+							<p className="text-sm text-gray-500">Added on {new Date(whitelist.created_at).toLocaleDateString()}</p>
 						</div>
 						<button
 							type="button"
 							className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
-							onClick={(): Promise<void> => handleRemoveWhitelist(item.ip)}
+							onClick={(): Promise<void> => handleRemoveWhitelist(whitelist.ip)}
 						>
 							<Trash2 className="w-5 h-5" />
 						</button>
