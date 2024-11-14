@@ -5,9 +5,9 @@ import type { IMaintenanceResponseBody, IResponseError, IWhitelist } from "./typ
 
 const App = (): ReactNode => {
 	const [underMaintenance, setUnderMaintenance] = useState<boolean>(false);
+	const [userIP, setUserIP] = useState<string>("");
 	const [whitelist, setWhitelist] = useState<IWhitelist[]>([]);
 	const [newToWhitelistIP, setNewToWhitelistIP] = useState<string>("");
-	const [userIP, setUserIP] = useState<string>("");
 
 	const handleGetIP = useCallback(async (): Promise<void> => {
 		try {
