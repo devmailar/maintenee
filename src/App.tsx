@@ -1,7 +1,7 @@
 import { Lock, Power, ShieldAlert, Trash2 } from "lucide-react";
 import React, { type ChangeEvent, type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import type { IMaintenanceResponseBody, IWhitelist } from "./types";
+import type { IMaintenance, IWhitelist } from "./types";
 import { localHttp } from "./utils";
 
 const App = (): ReactNode => {
@@ -24,7 +24,7 @@ const App = (): ReactNode => {
 	}, []);
 
 	const handleGetMaintenance = useCallback(async (): Promise<void> => {
-		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+		const { response, error } = await localHttp<IMaintenance>({
 			url: "http://localhost:3000/api/maintenance/status",
 			method: "GET",
 		});
@@ -48,7 +48,7 @@ const App = (): ReactNode => {
 	}, []);
 
 	const handleToggleMaintenance = async (): Promise<void> => {
-		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+		const { response, error } = await localHttp<IMaintenance>({
 			url: "http://localhost:3000/api/maintenance/toggle",
 			method: "POST",
 		});
@@ -62,7 +62,7 @@ const App = (): ReactNode => {
 
 	const handleAddWhitelist = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
 		e.preventDefault();
-		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+		const { response, error } = await localHttp<IMaintenance>({
 			url: "http://localhost:3000/api/maintenance/whitelist",
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
@@ -77,7 +77,7 @@ const App = (): ReactNode => {
 	};
 
 	const handleRemoveWhitelist = async (ip: string): Promise<void> => {
-		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+		const { response, error } = await localHttp<IMaintenance>({
 			url: `http://localhost:3000/api/maintenance/whitelist/${ip}`,
 			method: "DELETE",
 		});
