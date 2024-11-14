@@ -32,23 +32,33 @@ fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: Fastif
 			document.addEventListener('DOMContentLoaded', () => {
 				const overlay = document.createElement('div');
 				Object.assign(overlay.style, {
-					position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
-					backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: '999999', display: 'flex',
-					alignItems: 'center', justifyContent: 'center',
+					position: 'fixed',
+					top: '0',
+					left: '0',
+					width: '100%',
+					height: '100%',
+					backgroundColor: 'rgb(0 0 0 / 86%)',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					padding: '0.5rem',
 				});
 
 				const content = document.createElement('div');
 				Object.assign(content.style, {
-					backgroundColor: 'white', padding: '2rem', borderRadius: '0.5rem',
-					maxWidth: '90%', width: '400px', textAlign: 'center',
+					backgroundColor: '#4285f4',
+					padding: '2rem',
+					width: '36rem',
+					textAlign: 'center',
+					fontFamily: '"Poppins", sans-serif',
 				});
 
 				const title = document.createElement('h2');
-				Object.assign(title.style, { fontSize: '1.5rem', fontWeight: 'bold', color: '#1a1a1a' });
+				Object.assign(title.style, { color: '#000000', fontSize: '2.45rem', fontWeight: 'bold'});
 				title.textContent = 'Site Under Maintenance';
 
 				const message = document.createElement('p');
-				Object.assign(message.style, { color: '#666666', lineHeight: '1.5' });
+				Object.assign(message.style, { color: '#000000', fontSize: '1.75rem', fontWeight: 'medium', lineHeight: '1.5'});
 				message.textContent = 'We are currently performing scheduled maintenance. Please check back soon.';
 
 				content.appendChild(title);
