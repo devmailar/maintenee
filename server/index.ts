@@ -9,6 +9,60 @@ import type { IMaintenanceWhitelistCreateBody, IMaintenanceWhitelistDelParams } 
 const fastify: FastifyInstance = Fastify({ logger: true });
 const dir: string = path.dirname(fileURLToPath(import.meta.url));
 
+const getClientIP = (request: FastifyRequest): string | string[] =>
+	request.headers["x-forwarded-for"] ||
+	request.headers["x-real-ip"] ||
+	request.connection.remoteAddress ||
+	request.socket.remoteAddress ||
+	request.ip;
+
+fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+	const statusFile: Buffer = await fs.readFile(path.join(dir, "status.json"));
+	const status = JSON.parse(statusFile.toString("utf-8"));
+
+	const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
+	const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
+
+	const isWhitelisted: boolean = whitelist.some((item: { ip: string; created_at: string }) => {
+		return item.ip === getClientIP(request);
+	});
+
+	if (status.enabled && !isWhitelisted) {
+		reply.type("application/javascript").send(`
+			document.addEventListener('DOMContentLoaded', () => {
+				const overlay = document.createElement('div');
+				Object.assign(overlay.style, {
+					position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
+					backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: '999999', display: 'flex',
+					alignItems: 'center', justifyContent: 'center',
+				});
+
+				const content = document.createElement('div');
+				Object.assign(content.style, {
+					backgroundColor: 'white', padding: '2rem', borderRadius: '0.5rem',
+					maxWidth: '90%', width: '400px', textAlign: 'center',
+				});
+
+				const title = document.createElement('h2');
+				Object.assign(title.style, { fontSize: '1.5rem', fontWeight: 'bold', color: '#1a1a1a' });
+				title.textContent = 'Site Under Maintenance';
+
+				const message = document.createElement('p');
+				Object.assign(message.style, { color: '#666666', lineHeight: '1.5' });
+				message.textContent = 'We are currently performing scheduled maintenance. Please check back soon.';
+
+				content.appendChild(title);
+				content.appendChild(message);
+				overlay.appendChild(content);
+				document.body.appendChild(overlay);
+				document.body.style.overflow = 'hidden';
+			});
+		`);
+	} else {
+		reply.type("application/javascript").send("");
+	}
+});
+
 fastify.get("/maintenance/get", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
 	const statusFile: Buffer = await fs.readFile(path.join(dir, "status.json"));
 	const status: string = statusFile.toString("utf-8");
