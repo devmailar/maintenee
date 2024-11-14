@@ -25,7 +25,7 @@ const App = (): ReactNode => {
 
 	const handleGetMaintenance = useCallback(async (): Promise<void> => {
 		const { response, error } = await localHttp<IMaintenance>({
-			url: "http://localhost:3000/api/maintenance/status",
+			url: "http://localhost:8080/maintenance/status",
 			method: "GET",
 		});
 		if (error != null || !response) {
@@ -37,7 +37,7 @@ const App = (): ReactNode => {
 
 	const handleGetWhitelist = useCallback(async (): Promise<void> => {
 		const { response, error } = await localHttp<IWhitelist[]>({
-			url: "http://localhost:3000/api/maintenance/whitelist",
+			url: "http://localhost:8080/maintenance/whitelist",
 			method: "GET",
 		});
 		if (error != null || !response) {
@@ -49,7 +49,7 @@ const App = (): ReactNode => {
 
 	const handleToggleMaintenance = async (): Promise<void> => {
 		const { response, error } = await localHttp<IMaintenance>({
-			url: "http://localhost:3000/api/maintenance/toggle",
+			url: "http://localhost:8080/maintenance/toggle",
 			method: "POST",
 		});
 		if (error != null || !response) {
@@ -63,7 +63,7 @@ const App = (): ReactNode => {
 	const handleAddWhitelist = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
 		e.preventDefault();
 		const { response, error } = await localHttp<IMaintenance>({
-			url: "http://localhost:3000/api/maintenance/whitelist",
+			url: "http://localhost:8080/maintenance/whitelist",
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			data: { ip: newToWhitelistIP },
@@ -78,7 +78,7 @@ const App = (): ReactNode => {
 
 	const handleRemoveWhitelist = async (ip: string): Promise<void> => {
 		const { response, error } = await localHttp<IMaintenance>({
-			url: `http://localhost:3000/api/maintenance/whitelist/${ip}`,
+			url: `http://localhost:8080/maintenance/whitelist/${ip}`,
 			method: "DELETE",
 		});
 		if (error != null || !response) {

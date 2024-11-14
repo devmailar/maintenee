@@ -2,121 +2,72 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cors from "@fastify/cors";
-import Fastify from "fastify";
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const WHITELIST_FILE = path.join(__dirname, "whitelist.json");
-const STATUS_FILE = path.join(__dirname, "status.json");
+const fastify: FastifyInstance = Fastify({ logger: true });
 
-const fastify = Fastify({
-	logger: true,
-	trustProxy: true,
+const dir: string = path.dirname(fileURLToPath(import.meta.url));
+
+fastify.get("/maintenance/status", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+	const statusFile: Buffer = await fs.readFile(path.join(dir, "status.json"));
+	const status: string = statusFile.toString("utf-8");
+
+	return reply.code(200).send(JSON.parse(status));
 });
 
-await fastify.register(cors, { origin: true });
-await Promise.all([
-	fs.access(WHITELIST_FILE).catch(() => fs.writeFile(WHITELIST_FILE, JSON.stringify([]))),
-	fs.access(STATUS_FILE).catch(() => fs.writeFile(STATUS_FILE, JSON.stringify({ enabled: false }))),
-]);
+fastify.get("/maintenance/whitelist", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+	const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
+	const whitelist: string = whitelistFile.toString("utf-8");
 
-const getClientIP = (request) =>
-	request.headers["x-forwarded-for"] ||
-	request.headers["x-real-ip"] ||
-	request.connection.remoteAddress ||
-	request.socket.remoteAddress ||
-	request.ip;
-
-fastify.get("/api/maintenance/status", async () => {
-	return JSON.parse(await fs.readFile(STATUS_FILE, "utf-8"));
+	return reply.code(200).send(JSON.parse(whitelist));
 });
 
-fastify.post("/api/maintenance/toggle", async () => {
-	const status = JSON.parse(await fs.readFile(STATUS_FILE, "utf-8"));
+fastify.post("/maintenance/toggle", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+	const statusFile: Buffer = await fs.readFile(path.join(dir, "status.json"));
+	const status = JSON.parse(statusFile.toString("utf-8"));
 	status.enabled = !status.enabled;
+	await fs.writeFile(path.join(dir, "status.json"), JSON.stringify(status));
 
-	await fs.writeFile(STATUS_FILE, JSON.stringify(status, null, 2));
-
-	return status;
+	return reply.code(200).send(JSON.stringify(status));
 });
 
-fastify.get("/api/maintenance/whitelist", async () => JSON.parse(await fs.readFile(WHITELIST_FILE, "utf-8")));
-
-fastify.post("/api/maintenance/whitelist", async (request, reply) => {
+fastify.post("/maintenance/whitelist", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
 	const { ip } = request.body;
 	if (!ip) {
 		return reply.code(400).send({ error: "IP address is required" });
 	}
 
-	const whitelist = JSON.parse(await fs.readFile(WHITELIST_FILE, "utf-8"));
+	const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
+	const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
 	if (whitelist.some((item) => item.ip === ip)) {
 		return reply.code(400).send({ error: "IP already whitelisted" });
 	}
 
 	whitelist.push({ ip, created_at: new Date().toISOString() });
+	await fs.writeFile(path.join(dir, "whitelist.json"), JSON.stringify(whitelist));
 
-	await fs.writeFile(WHITELIST_FILE, JSON.stringify(whitelist, null, 2));
-
-	return { success: true };
+	return reply.status(200).send();
 });
 
-fastify.delete("/api/maintenance/whitelist/:ip", async (request) => {
-	const whitelist = JSON.parse(await fs.readFile(WHITELIST_FILE, "utf-8"));
-	const updatedWhitelist = whitelist.filter((item) => item.ip !== request.params.ip);
+fastify.delete(
+	"/maintenance/whitelist/:ip",
+	{},
+	async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+		const ipToDelete: string = request.params.ip;
 
-	await fs.writeFile(WHITELIST_FILE, JSON.stringify(updatedWhitelist, null, 2));
+		const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
+		const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
 
-	return { success: true };
-});
+		const updatedWhitelist = whitelist.filter((item) => item.ip !== ipToDelete);
+		await fs.writeFile(path.join(dir, "whitelist.json"), JSON.stringify(updatedWhitelist));
 
-fastify.get("/api/maintenance/current-ip", async (request) => ({
-	ip: getClientIP(request),
-}));
-
-fastify.get("/maintenance.js", async (request, reply) => {
-	const status = JSON.parse(await fs.readFile(STATUS_FILE, "utf-8"));
-
-	const whitelist: [{ ip: string; created_at: string }] = JSON.parse(await fs.readFile(WHITELIST_FILE, "utf-8"));
-	const isWhitelisted = whitelist.some((item: { ip: string; created_at: string }) => item.ip === getClientIP(request));
-
-	if (status.enabled && !isWhitelisted) {
-		reply.type("application/javascript").send(`
-			document.addEventListener('DOMContentLoaded', () => {
-				const overlay = document.createElement('div');
-				Object.assign(overlay.style, {
-					position: 'fixed', top: '0', left: '0', width: '100%', height: '100%',
-					backgroundColor: 'rgba(0, 0, 0, 0.9)', zIndex: '999999', display: 'flex',
-					alignItems: 'center', justifyContent: 'center',
-				});
-
-				const content = document.createElement('div');
-				Object.assign(content.style, {
-					backgroundColor: 'white', padding: '2rem', borderRadius: '0.5rem',
-					maxWidth: '90%', width: '400px', textAlign: 'center',
-				});
-
-				const title = document.createElement('h2');
-				Object.assign(title.style, { fontSize: '1.5rem', fontWeight: 'bold', color: '#1a1a1a' });
-				title.textContent = 'Site Under Maintenance';
-
-				const message = document.createElement('p');
-				Object.assign(message.style, { color: '#666666', lineHeight: '1.5' });
-				message.textContent = 'We are currently performing scheduled maintenance. Please check back soon.';
-
-				content.appendChild(title);
-				content.appendChild(message);
-				overlay.appendChild(content);
-				document.body.appendChild(overlay);
-				document.body.style.overflow = 'hidden';
-			});
-		`);
-	} else {
-		reply.type("application/javascript").send("");
-	}
-});
+		return reply.code(200).send({ message: "IP removed from whitelist successfully" });
+	},
+);
 
 try {
-	await fastify.listen({ port: 3000 });
-	console.log("Server running at http://localhost:3000");
+	await fastify.register(cors, { origin: true });
+	await fastify.listen({ port: 8080 });
 } catch (err) {
 	fastify.log.error(err);
 	process.exit(1);
