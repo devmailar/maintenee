@@ -1,11 +1,10 @@
+import cors from "@fastify/cors";
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import cors from "@fastify/cors";
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 
 const fastify: FastifyInstance = Fastify({ logger: true });
-
 const dir: string = path.dirname(fileURLToPath(import.meta.url));
 
 fastify.get("/maintenance/status", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
