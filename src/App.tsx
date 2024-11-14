@@ -17,7 +17,7 @@ const App = (): ReactNode => {
 		});
 
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			setUserIP(response.data.ip);
 		}
@@ -29,7 +29,7 @@ const App = (): ReactNode => {
 			method: "GET",
 		});
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			setUnderMaintenance(response.data.enabled);
 		}
@@ -41,7 +41,7 @@ const App = (): ReactNode => {
 			method: "GET",
 		});
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			setWhitelist(response.data);
 		}
@@ -53,7 +53,7 @@ const App = (): ReactNode => {
 			method: "POST",
 		});
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			setUnderMaintenance(response.data.enabled);
 			toast.success(`Maintenance ${response.data.enabled ? "Enabled" : "Disabled"}`);
@@ -69,7 +69,7 @@ const App = (): ReactNode => {
 			data: { ip: newToWhitelistIP },
 		});
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			setNewToWhitelistIP("");
 			handleGetWhitelist();
@@ -82,7 +82,7 @@ const App = (): ReactNode => {
 			method: "DELETE",
 		});
 		if (error != null || !response) {
-			toast.error(error.message);
+			toast.error(error.response.data.message);
 		} else {
 			handleGetWhitelist();
 		}
