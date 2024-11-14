@@ -1,13 +1,15 @@
-import cors from "@fastify/cors";
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import cors from "@fastify/cors";
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import MaintenanceWhitelistCreateSchema from "./schemas/MaintenanceWhitelistCreateSchema.ts";
+import type { IMaintenanceWhitelistCreateBody, IMaintenanceWhitelistDelParams } from "./types";
 
 const fastify: FastifyInstance = Fastify({ logger: true });
 const dir: string = path.dirname(fileURLToPath(import.meta.url));
 
-fastify.get("/maintenance/status", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+fastify.get("/maintenance/get", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
 	const statusFile: Buffer = await fs.readFile(path.join(dir, "status.json"));
 	const status: string = statusFile.toString("utf-8");
 
@@ -30,37 +32,60 @@ fastify.post("/maintenance/toggle", {}, async (request: FastifyRequest, reply: F
 	return reply.code(200).send(JSON.stringify(status));
 });
 
-fastify.post("/maintenance/whitelist", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-	const { ip } = request.body;
-	if (!ip) {
-		return reply.code(400).send({ error: "IP address is required" });
-	}
+fastify.post(
+	"/maintenance/whitelist/create",
+	{
+		schema: MaintenanceWhitelistCreateSchema,
+	},
+	async (
+		request: FastifyRequest<{
+			Body: IMaintenanceWhitelistCreateBody;
+		}>,
+		reply: FastifyReply,
+	): Promise<void> => {
+		const ip: string = request.body.ip;
 
-	const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
-	const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
-	if (whitelist.some((item) => item.ip === ip)) {
-		return reply.code(400).send({ error: "IP already whitelisted" });
-	}
+		const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
+		const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
+		if (
+			whitelist.some(
+				(item: {
+					ip: string;
+				}) => item.ip === ip,
+			)
+		) {
+			return reply.code(409).send({
+				message: "#409 IP already whitelisted",
+				error: "Conflict",
+				statusCode: 409,
+			});
+		}
 
-	whitelist.push({ ip, created_at: new Date().toISOString() });
-	await fs.writeFile(path.join(dir, "whitelist.json"), JSON.stringify(whitelist));
+		whitelist.push({ ip, created_at: new Date().toISOString() });
+		await fs.writeFile(path.join(dir, "whitelist.json"), JSON.stringify(whitelist));
 
-	return reply.status(200).send();
-});
+		return reply.status(200).send();
+	},
+);
 
 fastify.delete(
-	"/maintenance/whitelist/:ip",
+	"/maintenance/whitelist/del/:ip",
 	{},
-	async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-		const ipToDelete: string = request.params.ip;
+	async (
+		request: FastifyRequest<{
+			Params: IMaintenanceWhitelistDelParams;
+		}>,
+		reply: FastifyReply,
+	): Promise<void> => {
+		const ip: string = request.params.ip;
 
 		const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
 		const whitelist = JSON.parse(whitelistFile.toString("utf-8"));
 
-		const updatedWhitelist = whitelist.filter((item) => item.ip !== ipToDelete);
+		const updatedWhitelist = whitelist.filter((item: IMaintenanceWhitelistDelParams) => item.ip !== ip);
 		await fs.writeFile(path.join(dir, "whitelist.json"), JSON.stringify(updatedWhitelist));
 
-		return reply.code(200).send({ message: "IP removed from whitelist successfully" });
+		return reply.code(200).send();
 	},
 );
 
