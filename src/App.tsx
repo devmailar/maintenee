@@ -1,7 +1,8 @@
 import { Lock, Power, ShieldAlert, Trash2 } from "lucide-react";
 import React, { type ChangeEvent, type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import type { IMaintenanceResponseBody, IResponseError, IWhitelist } from "./types";
+import type { IMaintenanceResponseBody, IWhitelist } from "./types";
+import { localHttp } from "./utils";
 
 const App = (): ReactNode => {
 	const [underMaintenance, setUnderMaintenance] = useState<boolean>(false);
@@ -10,137 +11,80 @@ const App = (): ReactNode => {
 	const [newToWhitelistIP, setNewToWhitelistIP] = useState<string>("");
 
 	const handleGetIP = useCallback(async (): Promise<void> => {
-		try {
-			const getIpResponse = await fetch("https://api.ipify.org/?format=json", {
-				method: "GET",
-			});
+		const { response, error } = await localHttp<{ ip: string }>({
+			url: "https://api.ipify.org/?format=json",
+			method: "GET",
+		});
 
-			if (!getIpResponse.ok) {
-				const getIpResponseError: IResponseError = await getIpResponse.json();
-
-				throw new Error(getIpResponseError.message);
-			}
-
-			const getIpResponseBody: { ip: string } = await getIpResponse.json();
-
-			setUserIP(getIpResponseBody.ip);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
+			setUserIP(response.data.ip);
 		}
 	}, []);
 
 	const handleGetMaintenance = useCallback(async (): Promise<void> => {
-		try {
-			const getMaintenanceResponse: Response = await fetch("http://localhost:3000/api/maintenance/status", {
-				method: "GET",
-			});
-
-			if (!getMaintenanceResponse.ok) {
-				const getMaintenanceResponseError: IResponseError = await getMaintenanceResponse.json();
-
-				throw new Error(getMaintenanceResponseError.message);
-			}
-
-			const getMaintenanceResponseBody: IMaintenanceResponseBody = await getMaintenanceResponse.json();
-			setUnderMaintenance(getMaintenanceResponseBody.enabled);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
+		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+			url: "http://localhost:3000/api/maintenance/status",
+			method: "GET",
+		});
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
+			setUnderMaintenance(response.data.enabled);
 		}
 	}, []);
 
 	const handleGetWhitelist = useCallback(async (): Promise<void> => {
-		try {
-			const getWhitelistResponse: Response = await fetch("http://localhost:3000/api/maintenance/whitelist", {
-				method: "GET",
-			});
-
-			if (!getWhitelistResponse.ok) {
-				const getWhitelistResponseError: IResponseError = await getWhitelistResponse.json();
-
-				throw new Error(getWhitelistResponseError.message);
-			}
-
-			const getWhitelistResponseBody = await getWhitelistResponse.json();
-			setWhitelist(getWhitelistResponseBody);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
+		const { response, error } = await localHttp<IWhitelist[]>({
+			url: "http://localhost:3000/api/maintenance/whitelist",
+			method: "GET",
+		});
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
+			setWhitelist(response.data);
 		}
 	}, []);
 
 	const handleToggleMaintenance = async (): Promise<void> => {
-		try {
-			const toggleMaintenanceResponse: Response = await fetch("http://localhost:3000/api/maintenance/toggle", {
-				method: "POST",
-			});
-
-			if (!toggleMaintenanceResponse.ok) {
-				const toggleMaintenanceResponseError: IResponseError = await toggleMaintenanceResponse.json();
-
-				throw new Error(toggleMaintenanceResponseError.message);
-			}
-
-			const toggleMaintenanceResponseBody: IMaintenanceResponseBody = await toggleMaintenanceResponse.json();
-			setUnderMaintenance(toggleMaintenanceResponseBody.enabled);
-
-			toast.success(`Maintenance ${toggleMaintenanceResponseBody.enabled ? "Enabled" : "Disabled"}`);
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
+		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+			url: "http://localhost:3000/api/maintenance/toggle",
+			method: "POST",
+		});
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
+			setUnderMaintenance(response.data.enabled);
+			toast.success(`Maintenance ${response.data.enabled ? "Enabled" : "Disabled"}`);
 		}
 	};
 
-	const handleAddWhitelist = async (): Promise<void> => {
-		try {
-			const addWhitelistResponse: Response = await fetch("http://localhost:3000/api/maintenance/whitelist", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ ip: newToWhitelistIP }),
-			});
-
-			if (!addWhitelistResponse.ok) {
-				const addWhitelistResponseError: IResponseError = await addWhitelistResponse.json();
-
-				throw new Error(addWhitelistResponseError.message);
-			}
-
+	const handleAddWhitelist = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+		e.preventDefault();
+		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+			url: "http://localhost:3000/api/maintenance/whitelist",
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			data: { ip: newToWhitelistIP },
+		});
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
+			setNewToWhitelistIP("");
 			handleGetWhitelist();
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
 		}
 	};
 
 	const handleRemoveWhitelist = async (ip: string): Promise<void> => {
-		try {
-			const removeWhitelistResponse: Response = await fetch(`http://localhost:3000/api/maintenance/whitelist/${ip}`, {
-				method: "DELETE",
-			});
-
-			if (!removeWhitelistResponse.ok) {
-				const removeWhitelistResponseError: IResponseError = await removeWhitelistResponse.json();
-
-				throw new Error(removeWhitelistResponseError.message);
-			}
-
+		const { response, error } = await localHttp<IMaintenanceResponseBody>({
+			url: `http://localhost:3000/api/maintenance/whitelist/${ip}`,
+			method: "DELETE",
+		});
+		if (error != null || !response) {
+			toast.error(error.message);
+		} else {
 			handleGetWhitelist();
-		} catch (error: unknown) {
-			if (error instanceof Error) {
-				toast.error(error.message);
-				throw new Error(error.message);
-			}
 		}
 	};
 
@@ -189,7 +133,7 @@ const App = (): ReactNode => {
 					<h2 className="text-base text-black font-bold">IP Whitelist</h2>
 				</div>
 
-				<form className="flex gap-3" onSubmit={(e: FormEvent<HTMLFormElement>) => handleAddWhitelist()}>
+				<form className="flex gap-3" onSubmit={handleAddWhitelist}>
 					<input
 						type="text"
 						className="text-base text-black font-normal flex-1"
