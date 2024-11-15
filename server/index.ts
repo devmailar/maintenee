@@ -46,19 +46,17 @@ fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: Fastif
 
 				const content = document.createElement('div');
 				Object.assign(content.style, {
-					backgroundColor: '#4285f4',
-					padding: '2rem',
 					width: '36rem',
 					textAlign: 'center',
 					fontFamily: '"Poppins", sans-serif',
 				});
 
 				const title = document.createElement('h2');
-				Object.assign(title.style, { color: '#000000', fontSize: '2.45rem', fontWeight: 'bold'});
+				Object.assign(title.style, { color: 'white', fontSize: '2.25rem', fontWeight: 'bold'});
 				title.textContent = 'Site Under Maintenance';
 
 				const message = document.createElement('p');
-				Object.assign(message.style, { color: '#000000', fontSize: '1.75rem', fontWeight: 'medium', lineHeight: '1.5'});
+				Object.assign(message.style, { color: 'white', fontSize: '1.45rem', fontWeight: 'medium', lineHeight: '1.5'});
 				message.textContent = 'We are currently performing scheduled maintenance. Please check back soon.';
 
 				content.appendChild(title);
