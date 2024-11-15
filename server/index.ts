@@ -44,6 +44,8 @@ fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: Fastif
 					alignItems: 'center',
 					justifyContent: 'center',
 					padding: '0.5rem',
+					opacity: '0', // Start invisible
+					transition: 'opacity 0.5s ease', // Add fade-in transition
 				});
 
 				const content = document.createElement('div');
@@ -51,6 +53,8 @@ fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: Fastif
 					width: '36rem',
 					textAlign: 'center',
 					fontFamily: '"Poppins", sans-serif',
+					opacity: '0', // Start invisible
+					transition: 'opacity 0.5s ease 0.3s', // Add fade-in transition with delay
 				});
 
 				const title = document.createElement('h2');
@@ -66,6 +70,11 @@ fastify.get("/maintenance.js", {}, async (request: FastifyRequest, reply: Fastif
 				overlay.appendChild(content);
 				document.body.appendChild(overlay);
 				document.body.style.overflow = 'hidden';
+
+				requestAnimationFrame(() => {
+					overlay.style.opacity = '1';
+					content.style.opacity = '1';
+				});
 			});
 		`);
 	} else {
