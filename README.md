@@ -1,9 +1,7 @@
-# Maintenance Mode Plugin
+## Maintenee
+A powerful open-source maintenance mode integration software with easy to use dashboard and whitelisting access capabilities for your applications.
 
-A powerful maintenance mode plugin with IP whitelisting capabilities for your web applications.
-
-## Features
-
+#### Features
 - Toggle maintenance mode on/off
 - IP whitelisting system
 - Real-time status updates
@@ -11,24 +9,10 @@ A powerful maintenance mode plugin with IP whitelisting capabilities for your we
 - Beautiful maintenance page overlay
 - Admin panel for managing maintenance mode and whitelisted IPs
 
-## Setup
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Start the development server:
-```bash
-npm run dev
-```
-
-## Integration
-
+#### Integration
 Add this script tag to your website's HTML:
-
 ```html
-<script src="http://localhost:3000/maintenance.js"></script>
+<script src="http://localhost:8080/maintenance.js"></script>
 ```
 
 ## Usage
