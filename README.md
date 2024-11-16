@@ -11,7 +11,7 @@ Add this script tag to your website's HTML:
 <script src="http://localhost:8080/maintenance.js"></script>
 ```
 
-#### Features
+## Features
 | Feature                       | Description                                                                 |
 |-------------------------------|-----------------------------------------------------------------------------|
 | **Maintenance Mode Toggle**   | Easily enable or disable maintenance mode for your website.                |
@@ -20,7 +20,7 @@ Add this script tag to your website's HTML:
 | **Seamless Integration**      | Integrate effortlessly with any website framework or platform.             |
 | **Admin Management Panel**    | Control maintenance mode and manage whitelisted IPs through an admin UI.   |
 
-#### API Endpoints
+## API Endpoints
 | Method                        | Endpoint                                                                    |
 |-------------------------------|-----------------------------------------------------------------------------|
 | **GET**                       | http://localhost:8080/maintenance.js                                       |
