@@ -1,6 +1,12 @@
 # Maintenee
 A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
 
+### Integration
+Add this script tag to your website's HTML:
+```html
+<script src="http://localhost:8080/maintenance.js"></script>
+```
+
 ### Prerequisites
 Please make sure that [Node.js](https://nodejs.org/en) (version >= 16) is installed on your operating system.
 
@@ -13,12 +19,6 @@ $ pnpm install
 $ pnpm dev
 ```
 Access the admin panel http://localhost:5173 or the API service at http://localhost:8080
-
-### Integration
-Add this script tag to your website's HTML:
-```html
-<script src="http://localhost:8080/maintenance.js"></script>
-```
 
 ### Features
 | Feature                       | Description                                                                 |
