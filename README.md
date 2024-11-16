@@ -1,3 +1,5 @@
+![alt text](image.png)
+
 # Maintenee
 A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
 
