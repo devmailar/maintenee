@@ -13,7 +13,7 @@ Add this script tag to your website's HTML:
 Please make sure that [Node.js](https://nodejs.org/en) (version >= 16) is installed on your operating system.
 
 ### Setup
-With [pnpm](https://pnpm.io/) installed, you can run the project with the following commands in your OS
+With [pnpm](https://pnpm.io/installation#using-npm) installed, you can run the project with the following commands in your OS
 ```node
 $ git clone https://github.com/devmailar/maintenee.git
 $ cd maintenee
