@@ -1,7 +1,7 @@
 ![alt text](image.png)
 
 # Maintenee
-A powerful open-source enable maintenance mode and dashboard software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
+A powerful open-source enable maintenance mode software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
 
 ### Integration
 Add this script tag to your website's HTML:
