@@ -1,17 +1,26 @@
 # Maintenee
 A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
 
-Access the admin panel at http://localhost:5173
+### Prerequisites
+Please make sure that [Node.js](https://nodejs.org/en) (version >= 16) is installed on your operating system.
 
-Access the API at http://localhost:8080
+### Setup
+With [pnpm](https://pnpm.io/) installed, you can run the project with the following commands in your OS
+```node
+$ git clone https://github.com/devmailar/maintenee.git
+$ cd maintenee
+$ pnpm install
+$ pnpm dev
+```
+Access the admin panel http://localhost:5173 or the API service at http://localhost:8080
 
-## Integration
+### Integration
 Add this script tag to your website's HTML:
 ```html
 <script src="http://localhost:8080/maintenance.js"></script>
 ```
 
-## Features
+### Features
 | Feature                       | Description                                                                 |
 |-------------------------------|-----------------------------------------------------------------------------|
 | **Maintenance Mode Toggle**   | Easily enable or disable maintenance mode for your website.                |
@@ -20,7 +29,7 @@ Add this script tag to your website's HTML:
 | **Seamless Integration**      | Integrate effortlessly with any website framework or platform.             |
 | **Admin Management Panel**    | Control maintenance mode and manage whitelisted IPs through an admin UI.   |
 
-## API Endpoints
+### API Endpoints
 | Method                        | Endpoint                                                                    |
 |-------------------------------|-----------------------------------------------------------------------------|
 | **GET**                       | http://localhost:8080/maintenance.js                                       |
