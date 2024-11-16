@@ -1,5 +1,9 @@
 ## Maintenee
-A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites. Access the admin panel at http://localhost:5173
+A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites. 
+
+Access the admin panel at http://localhost:5173
+
+Access the API at http://localhost:8080
 
 #### Integration
 Add this script tag to your website's HTML:
