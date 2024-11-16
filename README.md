@@ -1,11 +1,17 @@
 ## Maintenee
-A powerful open-source maintenance mode integration software with easy to use dashboard and whitelisting access capabilities for your websites.
+A powerful open-source maintenance mode integration software with an easy-to-use dashboard and whitelisting access capabilities for your websites.
 
 #### Integration
 Add this script tag to your website's HTML:
 ```html
 <script src="http://localhost:8080/maintenance.js"></script>
 ```
+
+#### Usage
+Access the admin panel at http://localhost:5173
+<br>Use the toggle button to enable/disable maintenance mode
+<br>Add IP addresses to the whitelist to allow access during maintenance
+<br>The maintenance overlay will automatically appear for non-whitelisted IPs when maintenance mode is enabled
 
 #### Features
 | Feature                       | Description                                                                 |
