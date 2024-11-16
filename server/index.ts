@@ -3,8 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import type { IMaintenanceWhitelistCreateBody, IMaintenanceWhitelistDelParams } from "./index.types.ts";
 import MaintenanceWhitelistCreateSchema from "./schemas/MaintenanceWhitelistCreateSchema.ts";
-import type { IMaintenanceWhitelistCreateBody, IMaintenanceWhitelistDelParams } from "./types";
 
 const fastify: FastifyInstance = Fastify({ logger: true });
 const dir: string = path.dirname(fileURLToPath(import.meta.url));
