@@ -2,7 +2,14 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import cors from "@fastify/cors";
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import swagger from "@fastify/swagger";
+import swaggerUI from "@fastify/swagger-ui";
+import Fastify, {
+	type FastifyInstance,
+	type FastifyReply,
+	type FastifyRequest,
+	type HookHandlerDoneFunction,
+} from "fastify";
 import type { IMaintenanceWhitelistCreateBody, IMaintenanceWhitelistDelParams } from "./index.types.ts";
 import MaintenanceWhitelistCreateSchema from "./schemas/MaintenanceWhitelistCreateSchema.ts";
 
@@ -164,6 +171,43 @@ fastify.delete(
 
 try {
 	await fastify.register(cors, { origin: true });
+	await fastify.register(swagger, {
+		prefix: "/swagger",
+		openapi: {
+			openapi: "3.0.0",
+			info: {
+				title: "Maintenee Swagger",
+				description: "Fastify swagger API",
+				version: "0.1.0",
+			},
+			servers: [
+				{
+					url: "http://localhost:8080",
+					description: "Development server",
+				},
+			],
+			externalDocs: {
+				url: "https://swagger.io",
+				description: "Find more info here",
+			},
+		},
+	});
+	await fastify.register(swaggerUI, {
+		routePrefix: "/swagger",
+		uiConfig: { docExpansion: "full", deepLinking: false },
+		uiHooks: {
+			onRequest: (request: FastifyRequest, reply: FastifyReply, next: HookHandlerDoneFunction): void => {
+				next();
+			},
+			preHandler: (request: FastifyRequest, reply: FastifyReply, next: HookHandlerDoneFunction): void => {
+				next();
+			},
+		},
+		staticCSP: true,
+		transformStaticCSP: (header) => header,
+		transformSpecification: (swaggerObject, request, reply) => swaggerObject,
+		transformSpecificationClone: true,
+	});
 	await fastify.listen({ port: 8080 });
 } catch (err) {
 	fastify.log.error(err);
