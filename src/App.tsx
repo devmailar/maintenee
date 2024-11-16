@@ -37,7 +37,7 @@ const App = (): ReactNode => {
 
 	const handleGetWhitelist = useCallback(async (): Promise<void> => {
 		const { response, error } = await localHttp<IWhitelist[]>({
-			url: "http://localhost:8080/maintenance/whitelist",
+			url: "http://localhost:8080/maintenance/whitelist/get",
 			method: "GET",
 		});
 		if (error != null || !response) {

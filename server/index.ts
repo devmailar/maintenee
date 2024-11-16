@@ -96,7 +96,7 @@ fastify.get("/maintenance/get", {}, async (request: FastifyRequest, reply: Fasti
 	return reply.code(200).send(JSON.parse(status));
 });
 
-fastify.get("/maintenance/whitelist", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+fastify.get("/maintenance/whitelist/get", {}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
 	const whitelistFile: Buffer = await fs.readFile(path.join(dir, "whitelist.json"));
 	const whitelist: string = whitelistFile.toString("utf-8");
 
